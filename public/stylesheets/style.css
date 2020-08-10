@@ -1,0 +1,65 @@
+body {
+  background-color: grey;
+}
+
+.chat-window {
+  height: 90vh;
+  background-color: white;
+  border-radius: 5px;
+  box-shadow: 0px 2px 20px rgba(0, 0, 0, 0.2);
+}
+
+.users-container {
+  overflow-y: scroll;
+}
+
+.messages-list-wrapper {
+  overflow-y: scroll;
+}
+
+/* Users list */
+ul.users-list {
+  list-style-type: none;
+  padding: 0px;
+}
+
+ul.users-list li {
+  padding: 10px;
+  border-bottom: 1px solid #ddd;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+ul.users-list li:hover {
+  background-color: #eee;
+}
+
+ul.users-list li.active {
+  background-color: #ddd;
+}
+
+/* Messages list */
+ul.messages-list {
+  list-style-type: none;
+  padding: 0px;
+}
+
+ul.messages-list li {
+  padding: 10px;
+}
+
+ul.messages-list li:nth-child(3n) {
+  text-align: right;
+}
+
+ul.messages-list li .message {
+  background-color: #eee;
+  padding: 10px;
+  border-radius: 5px;
+  text-align: left;
+}
+
+ul.messages-list li:nth-child(3n) .message {
+  background-color: rgba(0, 105, 217, 0.2);
+  border-radius: 5px;
+}
