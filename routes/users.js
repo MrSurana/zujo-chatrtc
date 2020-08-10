@@ -28,15 +28,18 @@ router.get('/:userId/messages', function (req, res, next) {
   res.send([
     {
       _id: '1',
-      text: 'johndoe',
+      text: 'Hello there!',
+      senderId: '1'
     },
     {
       _id: '2',
-      text: 'janedoe',
+      text: 'How are you doing today?',
+      senderId: '1'
     },
     {
       _id: '3',
-      text: 'brucewayne',
+      text: 'I am doing good!',
+      senderId: '2'
     },
   ]);
 });

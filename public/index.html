@@ -27,7 +27,8 @@
         <div class="d-flex flex-column h-100">
           <div class="flex-fill messages-list-wrapper">
             <ul class="messages-list">
-              <li v-for="message in messages" :key="message._id">
+              <li v-for="message in messages" :key="message._id"
+                v-bind:class="{ sent: message.senderId == loggedInUser._id }">
                 <span class="message">{{ message.text }}</span>
               </li>
             </ul>

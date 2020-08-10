@@ -5,7 +5,11 @@ var app = new Vue({
         message: '',
         users: [],
         messages: [],
-        selUser: null
+        selUser: null,
+        loggedInUser: {
+            _id: '1',
+            name: 'johndoe',
+        }
     },
 
     mounted: function () {
@@ -26,7 +30,7 @@ var app = new Vue({
         },
 
         sendMessage: function () {
-            this.messages.push({ _id: this.messages.length + 1, name: this.message });
+            this.messages.push({ _id: this.messages.length + 1, text: this.message, senderId: this.loggedInUser._id });
             this.message = '';
         },
 

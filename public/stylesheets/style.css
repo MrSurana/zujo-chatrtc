@@ -48,7 +48,7 @@ ul.messages-list li {
   padding: 10px;
 }
 
-ul.messages-list li:nth-child(3n) {
+ul.messages-list li.sent {
   text-align: right;
 }
 
@@ -59,7 +59,7 @@ ul.messages-list li .message {
   text-align: left;
 }
 
-ul.messages-list li:nth-child(3n) .message {
+ul.messages-list li.sent .message {
   background-color: rgba(0, 105, 217, 0.2);
   border-radius: 5px;
 }
