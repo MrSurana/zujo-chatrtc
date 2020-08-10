@@ -7,6 +7,19 @@
 var app = require('../app');
 var debug = require('debug')('chatrtc:server');
 var http = require('http');
+var mongoose = require('mongoose');
+
+
+/**
+ * Connect to Database.
+ */
+
+mongoose.connect('mongodb://localhost/chatrtc', { useNewUrlParser: true, useUnifiedTopology: true });
+mongoose.connection.on('error', console.error.bind(console, 'db connection error:'));
+mongoose.connection.once('open', function () {
+  debug('MongoDB connected!');
+});
+
 
 /**
  * Get port from environment and store in Express.

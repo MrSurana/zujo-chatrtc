@@ -6,44 +6,56 @@ var app = new Vue({
         users: [],
         messages: [],
         selUser: null,
-        loggedInUser: {
-            _id: '1',
-            name: 'johndoe',
-        },
+        loggedInUser: null,
         peer: null
     },
 
     mounted: function () {
-        // Fetch users
-        this.fetchUsers();
+        let username = localStorage.getItem('username');
+        if (username == null) username = prompt('Username');
 
-        // TODO: Ask for username if not logged in
-        this.loggedInUser._id = prompt('userid');
-
-        // init Peer and init websocket
-        this.peer = new Peer(this.loggedInUser._id, { host: 'localhost', port: 9000, path: '/chatrtc' });
-
-        this.peer.on('open', (id) => {
-            // console.log('My peer ID is: ' + id);
-        });
-
-        this.peer.on('connection', (conn) => {
-            console.log('Connected to: %s', conn.peer);
-
-            const userIndex = this.users.findIndex(u => u._id == conn.peer);
-            if (userIndex > -1) {
-                this.users[userIndex].conn = conn;
-            }
-
-            conn.on('data', (data) => {
-                if (this.selUser && data.data.senderId == this.selUser._id) {
-                    this.messages.push(data.data)
-                }
-            });
-        });
+        this.findOrCreateUser(username);
     },
 
     methods: {
+        findOrCreateUser: function (username) {
+            fetch(`/api/users/${username}`)
+                .then(res => res.json())
+                .then(json => {
+                    localStorage.setItem('username', username);
+                    this.loggedInUser = json;
+
+                    this.fetchUsers();
+                    this.initPeer();
+                })
+                .catch(err => console.error(err));
+
+        },
+
+        initPeer: function () {
+            // init Peer and init websocket
+            this.peer = new Peer(this.loggedInUser._id, { host: 'localhost', port: 9000, path: '/chatrtc' });
+
+            this.peer.on('open', (id) => {
+                // console.log('My peer ID is: ' + id);
+            });
+
+            this.peer.on('connection', (conn) => {
+                console.log('Connected to: %s', conn.peer);
+
+                const userIndex = this.users.findIndex(u => u._id == conn.peer);
+                if (userIndex > -1) {
+                    this.users[userIndex].conn = conn;
+                }
+
+                conn.on('data', (data) => {
+                    if (this.selUser && data.data.senderId == this.selUser._id) {
+                        this.messages.push(data.data)
+                    }
+                });
+            });
+        },
+
         chatWithUser: function (user) {
             this.selUser = user;
 
@@ -77,7 +89,9 @@ var app = new Vue({
 
         fetchUsers: function () {
             // Fetch users
-            fetch('/api/users').then(res => res.json()).then(json => this.users = json).catch(err => console.error(err));
+            fetch('/api/users').then(res => res.json())
+                .then(json => this.users = json.filter(u => u._id != this.loggedInUser._id))
+                .catch(err => console.error(err));
         },
 
         fetchMessages: function (user) {
