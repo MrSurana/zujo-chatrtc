@@ -7,7 +7,7 @@ var app = new Vue({
         message: '',
         users: [], messages: [],
         selUser: null, loggedInUser: null,
-        peer: null
+        peer: null, websocket: null,
     },
 
     mounted: function () {
@@ -53,24 +53,30 @@ var app = new Vue({
                 conn.on('data', (data) => {
                     if (this.selUser && data.data.senderId == this.selUser._id) {
                         this.messages.push(data.data)
+                    } else {
+                        const uIndex = this.users.findIndex(u => data.data.senderId == u._id);
+                        this.users[uIndex].unreadMessages = true;
+                        Vue.set(this.users, uIndex, this.users[uIndex]);
                     }
                 });
             });
         },
 
         initWebsocket: function () {
-            const websocket = new WebSocket(websocketUrl);
-            websocket.onopen = (e) => {
+            if (this.websocket != null) this.websocket.close();
+
+            this.websocket = new WebSocket(websocketUrl);
+            this.websocket.onopen = (e) => {
                 console.log("[ws-open] Connection established");
-                websocket.send(JSON.stringify({
+                this.websocket.send(JSON.stringify({
                     type: 'login',
                     data: this.loggedInUser
                 }));
             };
 
-            websocket.onmessage = (event) => this.handleWebsocketMessage(event.data);
+            this.websocket.onmessage = (event) => this.handleWebsocketMessage(event.data);
 
-            websocket.onclose = (event) => {
+            this.websocket.onclose = (event) => {
                 if (event.wasClean) {
                     console.log(`[ws-close] Connection closed cleanly, code=${event.code} reason=${event.reason}`);
                 } else {
@@ -78,14 +84,16 @@ var app = new Vue({
                 }
             };
 
-            websocket.onerror = (error) => console.error(`[ws-error] ${error.message}`);
+            this.websocket.onerror = (error) => console.error(`[ws-error] ${error.message}`);
         },
 
         handleWebsocketMessage: function (message) {
             const json = JSON.parse(message);
             switch (json.type) {
                 case 'users':
-                    json.data.forEach(this.markOnline);
+                    setTimeout(() => {
+                        json.data.forEach(this.markOnline);
+                    }, 1000);
                     break;
 
                 case 'user-online':
@@ -104,6 +112,9 @@ var app = new Vue({
         markOnline: function (user) {
             const userIndex = this.users.findIndex(u => u._id == user._id);
             if (userIndex > -1) this.tryPeerConnect(userIndex);
+            else if (user._id != this.loggedInUser._id) {
+                this.users.push(user)
+            }
         },
 
         markOffline: function (user) {
