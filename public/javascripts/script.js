@@ -5,10 +5,8 @@ var app = new Vue({
     el: '#app',
     data: {
         message: '',
-        users: [],
-        messages: [],
-        selUser: null,
-        loggedInUser: null,
+        users: [], messages: [],
+        selUser: null, loggedInUser: null,
         peer: null
     },
 
@@ -103,13 +101,11 @@ var app = new Vue({
             }
         },
 
-        // establish peer connection to user
         markOnline: function (user) {
             const userIndex = this.users.findIndex(u => u._id == user._id);
             if (userIndex > -1) this.tryPeerConnect(userIndex);
         },
 
-        // unestablish peer connection to user
         markOffline: function (user) {
             const userIndex = this.users.findIndex(u => u._id == user._id);
             if (userIndex > -1) this.peerDisconnect(userIndex);
@@ -131,9 +127,7 @@ var app = new Vue({
                     }
                 });
 
-                user.conn.on('open', () => {
-                    Vue.set(this.users, userIndex, user);
-                });
+                user.conn.on('open', () => { Vue.set(this.users, userIndex, user); });
             }
         },
 
@@ -171,7 +165,7 @@ var app = new Vue({
         },
 
         switchUser: function () {
-            username = this.askForUsername();
+            const username = this.askForUsername();
             if (username == null) return;
 
             for (const i in this.users) this.peerDisconnect(i);

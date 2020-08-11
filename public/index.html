@@ -4,7 +4,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>ChatRTC</title>
+  <title>Zujo ChatRTC</title>
 
   <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css"
     integrity="sha384-JcKb8q3iqJ61gNV9KGb8thSsNjpSL0n8PARn9HuZOnIxN0hoP+VmmDGMN5t9UJ0Z" crossorigin="anonymous">
@@ -14,9 +14,14 @@
 
 <body>
   <div class="container py-4" id="app">
+    <!-- Title -->
     <h3 class="text-center text-white">Welcome <span class="username"
         @click="switchUser">{{ loggedInUser?.username }}</span></h3>
+
+    <!-- Chat Window -->
     <div class="form-row chat-window">
+
+      <!-- Users -->
       <div class="col-sm-4 users-container p-0 h-100">
         <ul class="users-list">
           <li v-for="(user, index) in users" :key="user._id" @click="chatWithUser(user, index)"
@@ -29,8 +34,11 @@
           </li>
         </ul>
       </div>
+
+      <!-- Messages -->
       <div class="col-sm-8 messages-container h-100 py-2">
         <div class="d-flex flex-column h-100">
+
           <div class="flex-fill messages-list-wrapper">
             <ul class="messages-list">
               <li v-for="message in messages" :key="message._id"
@@ -39,13 +47,15 @@
               </li>
             </ul>
           </div>
+
           <div v-if="selUser != null" class="mt-2">
             <form @submit.prevent="sendMessage" class="d-flex align-items-end" autocomplete="off">
-              <input placeholder="Press Start, enter some text, then press Send." id="dataChannelSend"
-                class="form-control flex-fill" v-model="message" autocomplete="off">
+              <input placeholder="Enter some text, then press Send." id="dataChannelSend" class="form-control flex-fill"
+                v-model="message" autocomplete="off">
               <button type="submit" class="btn btn-primary ml-2">Send</button>
             </form>
           </div>
+
         </div>
       </div>
 
