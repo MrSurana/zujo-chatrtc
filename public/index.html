@@ -24,7 +24,7 @@
           </li>
         </ul>
       </div>
-      <div class="col-sm-8 messages-container h-100">
+      <div class="col-sm-8 messages-container h-100 py-2">
         <div class="d-flex flex-column h-100">
           <div class="flex-fill messages-list-wrapper">
             <ul class="messages-list">
@@ -34,10 +34,12 @@
               </li>
             </ul>
           </div>
-          <div class="d-flex align-items-end my-2">
-            <textarea placeholder="Press Start, enter some text, then press Send." id="dataChannelSend" rows="4"
-              class="form-control flex-fill" v-model="message"></textarea>
-            <button class="btn btn-primary ml-2" @click="sendMessage">Send</button>
+          <div v-if="selUser != null" class="mt-2">
+            <form @submit.prevent="sendMessage" class="d-flex align-items-end" autocomplete="off">
+              <input placeholder="Press Start, enter some text, then press Send." id="dataChannelSend"
+                class="form-control flex-fill" v-model="message" autocomplete="off">
+              <button type="submit" class="btn btn-primary ml-2">Send</button>
+            </form>
           </div>
         </div>
       </div>
