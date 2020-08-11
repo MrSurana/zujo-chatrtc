@@ -180,7 +180,7 @@ var app = new Vue({
             if (username == null) return;
 
             for (const i in this.users) this.peerDisconnect(i);
-
+            this.selUser = null;
             this.findOrCreateUser(username);
         },
 
