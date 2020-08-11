@@ -25,16 +25,14 @@ var app = new Vue({
                     localStorage.setItem('username', username);
                     this.loggedInUser = json;
 
-                    this.fetchUsers();
                     this.initPeer();
-                    this.initWebsocket();
+                    this.fetchUsers();
                 })
                 .catch(err => console.error(err));
 
         },
 
         initPeer: function () {
-            // init Peer and init websocket
             this.peer = new Peer(this.loggedInUser._id, { host: 'localhost', port: 9000, path: '/chatrtc' });
 
             this.peer.on('open', (id) => {
@@ -42,12 +40,12 @@ var app = new Vue({
             });
 
             this.peer.on('connection', (conn) => {
-                console.log('Connected to: %s', conn.peer);
+                // console.log('Connected to: %s', conn.peer);
 
                 const userIndex = this.users.findIndex(u => u._id == conn.peer);
-                if (userIndex > -1) {
-                    this.users[userIndex].conn = conn;
-                }
+                this.users[userIndex].conn = conn;
+
+                conn.on('open', () => Vue.set(this.users, userIndex, this.users[userIndex]));
 
                 conn.on('data', (data) => {
                     if (this.selUser && data.data.senderId == this.selUser._id) {
@@ -60,7 +58,7 @@ var app = new Vue({
         initWebsocket: function () {
             const websocket = new WebSocket("ws://localhost:3000");
             websocket.onopen = (e) => {
-                console.log("[open] Connection established");
+                console.log("[ws-open] Connection established");
                 websocket.send(JSON.stringify({
                     type: 'login',
                     data: this.loggedInUser
@@ -71,59 +69,50 @@ var app = new Vue({
 
             websocket.onclose = (event) => {
                 if (event.wasClean) {
-                    console.log(`[close] Connection closed cleanly, code=${event.code} reason=${event.reason}`);
+                    console.log(`[ws-close] Connection closed cleanly, code=${event.code} reason=${event.reason}`);
                 } else {
-                    console.log('[close] Connection died');
+                    console.log('[ws-close] Connection died');
                 }
             };
 
-            websocket.onerror = (error) => {
-                console.log(`[error] ${error.message}`);
-            };
-
+            websocket.onerror = (error) => console.error(`[ws-error] ${error.message}`);
         },
 
         handleWebsocketMessage: function (message) {
-            console.log('received: %s', message);
+            const json = JSON.parse(message);
+            switch (json.type) {
+                case 'users':
+                    json.data.forEach(this.markOnline);
+                    break;
 
-            try {
-                const json = JSON.parse(message);
-                switch (json.type) {
-                    case 'users':
-                        json.data.forEach(this.markOnline);
-                        break;
+                case 'user-online':
+                    this.markOnline(json.data);
+                    break;
 
-                    case 'user-online':
-                        this.markOnline(json.data);
-                        break;
+                case 'user-offline':
+                    this.markOffline(json.data);
+                    break;
 
-                    case 'user-offline':
-                        this.markOffline(json.data);
-                        break;
-
-                    default:
-                        break;
-                }
-            } catch (e) {
-                console.error("Invalid JSON");
+                default:
+                    break;
             }
         },
 
+        // establish peer connection to user
         markOnline: function (user) {
-            // TODO: establish peer connection to user
+            const userIndex = this.users.findIndex(u => u._id == user._id);
+            if (userIndex > -1) this.tryPeerConnect(userIndex);
         },
 
+        // unestablish peer connection to user
         markOffline: function (user) {
-            // TODO: unestablish peer connection to user
+            const userIndex = this.users.findIndex(u => u._id == user._id);
+            if (userIndex > -1) this.peerDisconnect(userIndex);
         },
 
-        chatWithUser: function (user) {
-            this.selUser = user;
+        tryPeerConnect: function (userIndex) {
+            const user = this.users[userIndex];
 
-            // Fetch user messages
-            this.fetchMessages(user._id);
-
-            // Check if connection is active with user, if not then try connecting
             if (!user.conn || !user.conn.open) {
                 user.conn = this.peer.connect(user._id);
 
@@ -132,15 +121,47 @@ var app = new Vue({
                         this.messages.push(data.data)
                     }
                 });
+
+                user.conn.on('open', () => {
+                    Vue.set(this.users, userIndex, user);
+                });
             }
         },
 
+        peerDisconnect: function (userIndex) {
+            const user = this.users[userIndex];
+
+            if (user.conn) {
+                user.conn.close();
+                delete user.conn;
+
+                Vue.set(this.users, userIndex, user);
+            }
+        },
+
+        chatWithUser: function (user, index) {
+            this.selUser = user;
+
+            // Fetch user messages
+            this.fetchMessages(user._id);
+
+            // Check if connection is active with user, if not then try connecting
+            this.tryPeerConnect(index);
+        },
+
         sendMessage: function () {
-            this.selUser.conn.send({
-                type: 'message',
-                data: { _id: this.messages.length + 1, text: this.message, senderId: this.loggedInUser._id }
-            });
+            if (this.selUser.conn && this.selUser.conn.open) {
+                this.selUser.conn.send({
+                    type: 'message',
+                    data: { _id: this.messages.length + 1, text: this.message, senderId: this.loggedInUser._id }
+                });
+            }
+
             this.messages.push({ _id: this.messages.length + 1, text: this.message, senderId: this.loggedInUser._id });
+
+            // TODO: save message in DB
+            //
+
             this.message = '';
         },
 
@@ -151,13 +172,14 @@ var app = new Vue({
         fetchUsers: function () {
             // Fetch users
             fetch('/api/users').then(res => res.json())
-                .then(json => this.users = json.filter(u => u._id != this.loggedInUser._id))
+                .then(json => {
+                    this.users = json.filter(u => u._id != this.loggedInUser._id);
+                    this.initWebsocket();
+                })
                 .catch(err => console.error(err));
         },
 
         fetchMessages: function (user) {
-            // TODO: Fetch messages for user 
-
             fetch(`/api/users/${user.id}/messages`)
                 .then(res => res.json())
                 .then(json => this.messages = json)

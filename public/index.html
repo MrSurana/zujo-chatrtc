@@ -18,9 +18,11 @@
     <div class="form-row chat-window">
       <div class="col-sm-4 users-container p-0 h-100">
         <ul class="users-list">
-          <li v-for="user in users" :key="user._id" @click="chatWithUser(user)"
+          <li v-for="(user, index) in users" :key="user._id" @click="chatWithUser(user, index)"
             v-bind:class="{ active: selUser?._id == user._id }">
-            {{ user.username }}
+            <div>{{ user.username }}</div>
+            <span class="badge badge-success" v-if="user.conn?.open">Online</span>
+            <span class="badge badge-secondary" v-if="!user.conn?.open">Offline</span>
           </li>
         </ul>
       </div>
