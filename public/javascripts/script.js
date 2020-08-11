@@ -119,6 +119,10 @@ var app = new Vue({
                 user.conn.on('data', (data) => {
                     if (this.selUser && data.data.senderId == this.selUser._id) {
                         this.messages.push(data.data)
+                    } else {
+                        const uIndex = this.users.findIndex(u => data.data.senderId == u._id);
+                        this.users[uIndex].unreadMessages = true;
+                        Vue.set(this.users, uIndex, this.users[uIndex]);
                     }
                 });
 
@@ -141,6 +145,7 @@ var app = new Vue({
 
         chatWithUser: function (user, index) {
             this.selUser = user;
+            user.unreadMessages = false;
 
             this.fetchMessages(user._id);
             this.tryPeerConnect(index);

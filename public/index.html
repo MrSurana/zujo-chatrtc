@@ -23,6 +23,8 @@
             <div>{{ user.username }}</div>
             <span class="badge badge-success" v-if="user.conn?.open">Online</span>
             <span class="badge badge-secondary" v-if="!user.conn?.open">Offline</span>
+
+            <span class="badge badge-primary" v-if="user.unreadMessages">New message</span>
           </li>
         </ul>
       </div>
