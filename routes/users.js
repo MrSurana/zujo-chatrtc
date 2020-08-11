@@ -10,6 +10,11 @@ router.get('/', async (req, res, next) => {
 
 /* GET user messages listing. */
 router.get('/:username', async (req, res, next) => {
+  if (!req.params.username.match(/^[a-zA-Z]+$/)) {
+    res.status(400).send('Invalid username!');
+  }
+
+
   let user = await User.findOne({ username: req.params.username });
 
   if (user == null) {

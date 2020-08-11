@@ -14,7 +14,8 @@ var app = new Vue({
 
     mounted: function () {
         let username = localStorage.getItem('username');
-        if (username == null) username = prompt('Username');
+        if (username == null) username = this.askForUsername();
+        if (username == null) return;
 
         this.findOrCreateUser(username);
     },
@@ -35,6 +36,8 @@ var app = new Vue({
         },
 
         initPeer: function () {
+            if (this.peer != null) this.peer.disconnect();
+
             this.peer = new Peer(this.loggedInUser._id, peerConfig);
 
             this.peer.on('open', (id) => {
@@ -167,8 +170,25 @@ var app = new Vue({
             this.message = '';
         },
 
-        logout: function () {
-            // TODO: Logout user
+        switchUser: function () {
+            username = this.askForUsername();
+            if (username == null) return;
+
+            for (const i in this.users) this.peerDisconnect(i);
+
+            this.findOrCreateUser(username);
+        },
+
+        askForUsername: function () {
+            const username = prompt('Username');
+            if (username == null) return null;
+
+            if (!username.match(/^[a-zA-Z]+$/)) {
+                alert('Invalid username! Only alphabets are allowed.');
+                return this.askForUsername();
+            }
+
+            return username;
         },
 
         fetchUsers: function () {
@@ -194,7 +214,7 @@ var app = new Vue({
                 headers: { 'Content-Type': 'application/json' },
             })
                 .then(res => res.json())
-                .then(json => console.log(json))
+                .then(json => null)
                 .catch(err => console.error(err));
         },
     }

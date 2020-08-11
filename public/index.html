@@ -14,7 +14,8 @@
 
 <body>
   <div class="container py-4" id="app">
-    <h3 class="text-center text-white">Welcome {{ loggedInUser?.username }}</h3>
+    <h3 class="text-center text-white">Welcome <span class="username"
+        @click="switchUser">{{ loggedInUser?.username }}</span></h3>
     <div class="form-row chat-window">
       <div class="col-sm-4 users-container p-0 h-100">
         <ul class="users-list">

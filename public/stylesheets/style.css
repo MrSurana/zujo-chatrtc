@@ -2,6 +2,11 @@ body {
   background-color: grey;
 }
 
+.username {
+  color: rgb(155, 195, 238);
+  cursor: pointer;
+}
+
 .chat-window {
   height: 90vh;
   background-color: white;
