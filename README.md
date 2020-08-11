@@ -15,16 +15,16 @@ WebRTC peer to peer chat, built with:
 Instructions
 ===
 
-### 1. Copy .env.example to .env file and customize mongo details as required.
+1. Copy .env.example to .env file and customize mongo details as required.
 
-### 2. Run with docker (from project root directory):
+2. Run with docker (from project root directory):
 ```sh
     docker-compose up -d
 ```
 
 OR 
 
-### 2. Run without docker (from project root directory):
+2. Run without docker (from project root directory):
 ```sh
     npm install peer -g
     peerjs --port 9000 --key peerjs --path /myapp
