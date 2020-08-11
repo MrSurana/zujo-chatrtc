@@ -142,10 +142,7 @@ var app = new Vue({
         chatWithUser: function (user, index) {
             this.selUser = user;
 
-            // Fetch user messages
             this.fetchMessages(user._id);
-
-            // Check if connection is active with user, if not then try connecting
             this.tryPeerConnect(index);
         },
 
@@ -158,9 +155,7 @@ var app = new Vue({
             }
 
             this.messages.push({ _id: this.messages.length + 1, text: this.message, senderId: this.loggedInUser._id });
-
-            // TODO: save message in DB
-            //
+            this.saveMessage(this.selUser._id, this.message);
 
             this.message = '';
         },
@@ -170,7 +165,6 @@ var app = new Vue({
         },
 
         fetchUsers: function () {
-            // Fetch users
             fetch('/api/users').then(res => res.json())
                 .then(json => {
                     this.users = json.filter(u => u._id != this.loggedInUser._id);
@@ -179,10 +173,21 @@ var app = new Vue({
                 .catch(err => console.error(err));
         },
 
-        fetchMessages: function (user) {
-            fetch(`/api/users/${user.id}/messages`)
+        fetchMessages: function (userId) {
+            fetch(`/api/users/${userId}/${this.loggedInUser._id}/messages`)
                 .then(res => res.json())
                 .then(json => this.messages = json)
+                .catch(err => console.error(err));
+        },
+
+        saveMessage: function (userId, text) {
+            fetch(`/api/users/${this.loggedInUser._id}/${userId}/messages`, {
+                method: 'POST',
+                body: JSON.stringify({ text: text }),
+                headers: { 'Content-Type': 'application/json' },
+            })
+                .then(res => res.json())
+                .then(json => console.log(json))
                 .catch(err => console.error(err));
         },
     }

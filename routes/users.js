@@ -1,6 +1,7 @@
 var express = require('express');
 var router = express.Router();
 var User = require('../models/user.model');
+var Message = require('../models/message.model');
 
 /* GET users listing. */
 router.get('/', async (req, res, next) => {
@@ -20,10 +21,24 @@ router.get('/:username', async (req, res, next) => {
 })
 
 /* GET user messages listing. */
-router.get('/:userId/messages', function (req, res, next) {
-  // TODO: messages from DB using req.params.userId
+router.get('/:userId1/:userId2/messages', async (req, res, next) => {
+  res.send(await Message.find().or([
+    { senderId: req.params.userId1, receiverId: req.params.userId2 },
+    { senderId: req.params.userId2, receiverId: req.params.userId1 }
+  ]));
+});
 
-  res.send([]);
+/* Save message. */
+router.post('/:senderId/:receiverId/messages', async (req, res, next) => {
+  const message = new Message({
+    text: req.body.text,
+    senderId: req.params.senderId,
+    receiverId: req.params.receiverId
+  });
+
+  await message.save();
+
+  res.send(message);
 });
 
 module.exports = router;
