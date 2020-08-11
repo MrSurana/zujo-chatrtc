@@ -27,6 +27,7 @@ var app = new Vue({
 
                     this.fetchUsers();
                     this.initPeer();
+                    this.initWebsocket();
                 })
                 .catch(err => console.error(err));
 
@@ -54,6 +55,66 @@ var app = new Vue({
                     }
                 });
             });
+        },
+
+        initWebsocket: function () {
+            const websocket = new WebSocket("ws://localhost:3000");
+            websocket.onopen = (e) => {
+                console.log("[open] Connection established");
+                websocket.send(JSON.stringify({
+                    type: 'login',
+                    data: this.loggedInUser
+                }));
+            };
+
+            websocket.onmessage = (event) => this.handleWebsocketMessage(event.data);
+
+            websocket.onclose = (event) => {
+                if (event.wasClean) {
+                    console.log(`[close] Connection closed cleanly, code=${event.code} reason=${event.reason}`);
+                } else {
+                    console.log('[close] Connection died');
+                }
+            };
+
+            websocket.onerror = (error) => {
+                console.log(`[error] ${error.message}`);
+            };
+
+        },
+
+        handleWebsocketMessage: function (message) {
+            console.log('received: %s', message);
+
+            try {
+                const json = JSON.parse(message);
+                switch (json.type) {
+                    case 'users':
+                        json.data.forEach(this.markOnline);
+                        break;
+
+                    case 'user-online':
+                        this.markOnline(json.data);
+                        break;
+
+                    case 'user-offline':
+                        this.markOffline(json.data);
+                        break;
+
+                    default:
+                        break;
+                }
+            } catch (e) {
+                console.error("Invalid JSON");
+            }
+        },
+
+        markOnline: function (user) {
+            // TODO: establish peer connection to user
+        },
+
+        markOffline: function (user) {
+            // TODO: unestablish peer connection to user
         },
 
         chatWithUser: function (user) {
