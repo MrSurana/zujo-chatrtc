@@ -181,6 +181,7 @@ var app = new Vue({
 
             for (const i in this.users) this.peerDisconnect(i);
             this.selUser = null;
+            this.messages = [];
             this.findOrCreateUser(username);
         },
 
