@@ -14,7 +14,8 @@ var mongoose = require('mongoose');
  * Connect to Database.
  */
 
-mongoose.connect('mongodb://localhost/chatrtc', { useNewUrlParser: true, useUnifiedTopology: true });
+const mongoUri = `mongodb://${process.env.MONGO_USERNAME}:${process.env.MONGO_PASSWORD}@${process.env.MONGO_HOSTNAME}:${process.env.MONGO_PORT}/${process.env.MONGO_DB}?authSource=admin`;
+mongoose.connect(mongoUri, { useNewUrlParser: true, useUnifiedTopology: true });
 mongoose.connection.on('error', console.error.bind(console, 'db connection error:'));
 mongoose.connection.once('open', function () {
   debug('MongoDB connected!');
@@ -25,7 +26,7 @@ mongoose.connection.once('open', function () {
  * Get port from environment and store in Express.
  */
 
-var port = normalizePort(process.env.PORT || '3000');
+var port = normalizePort(process.env.APP_PORT || '3000');
 app.set('port', port);
 
 /**

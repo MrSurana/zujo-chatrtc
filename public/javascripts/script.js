@@ -1,4 +1,6 @@
-// fetch list of users
+const websocketUrl = 'ws://localhost:3000';
+const peerConfig = { host: 'localhost', port: 9000, path: '/myapp' };
+
 var app = new Vue({
     el: '#app',
     data: {
@@ -33,7 +35,7 @@ var app = new Vue({
         },
 
         initPeer: function () {
-            this.peer = new Peer(this.loggedInUser._id, { host: 'localhost', port: 9000, path: '/chatrtc' });
+            this.peer = new Peer(this.loggedInUser._id, peerConfig);
 
             this.peer.on('open', (id) => {
                 // console.log('My peer ID is: ' + id);
@@ -56,7 +58,7 @@ var app = new Vue({
         },
 
         initWebsocket: function () {
-            const websocket = new WebSocket("ws://localhost:3000");
+            const websocket = new WebSocket(websocketUrl);
             websocket.onopen = (e) => {
                 console.log("[ws-open] Connection established");
                 websocket.send(JSON.stringify({
